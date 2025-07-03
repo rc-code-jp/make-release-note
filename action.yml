@@ -1,0 +1,31 @@
+name: 'Make Release Note'
+description: 'Generate release notes using Gemini API from pull request changes'
+author: 'Your Name'
+
+inputs:
+  gemini-api-key:
+    description: 'Gemini API key for generating release notes'
+    required: true
+  github-token:
+    description: 'GitHub token for accessing repository and creating comments'
+    required: true
+    default: ${{ github.token }}
+  pull-request-number:
+    description: 'Pull request number to analyze'
+    required: true
+  language:
+    description: 'Language for the release notes (default: ja)'
+    required: false
+    default: 'ja'
+
+outputs:
+  release-notes:
+    description: 'Generated release notes in markdown format'
+
+runs:
+  using: 'node20'
+  main: 'index.js'
+
+branding:
+  icon: 'file-text'
+  color: 'blue' 
