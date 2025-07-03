@@ -33499,7 +33499,6 @@ ${commitInfo.meaningfulCommits.map(commit => `- ${commit.sha}: ${commit.message}
 ## 貢献者
 （貢献者一覧）
 
-各セクションは該当するコミットがある場合のみ含めてください。
 抽象的な表現は避け、コミットメッセージから読み取れる具体的な変更内容のみを記述してください。
 `;
 }
