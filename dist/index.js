@@ -33338,7 +33338,7 @@ async function run() {
 
     // Gemini APIを初期化
     const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash-lite-preview-06-17" });
 
     // プロンプトを作成
     const prompt = createPrompt(pullRequest, changedFiles, commitInfo, language);
@@ -33347,18 +33347,46 @@ async function run() {
     const result = await model.generateContent(prompt);
     const releaseNotes = result.response.text();
 
-    // リリースノートをプルリクエストにコメントとして投稿
-    await octokit.rest.issues.createComment({
+    // トークン使用量をログに記録
+    const usageMetadata = result.response.usageMetadata;
+    if (usageMetadata) {
+      console.log('=== Token Usage Information ===');
+      console.log(`Prompt tokens: ${usageMetadata.promptTokenCount || 'N/A'}`);
+      console.log(`Completion tokens: ${usageMetadata.candidatesTokenCount || 'N/A'}`);
+      console.log(`Total tokens: ${usageMetadata.totalTokenCount || 'N/A'}`);
+      console.log('===============================');
+    } else {
+      console.log('Token usage information not available');
+    }
+
+    // PRの説明欄を更新（既存のリリースノートがあれば置換、なければ追記）
+    const currentBody = pullRequest.body || '';
+    const releaseNotesSection = `\n\n---\n\n## 🚀 Release Notes\n\n${releaseNotes}`;
+    
+    // 既存のリリースノートセクションを検索
+    const releaseNotesRegex = /\n\n---\n\n## 🚀 Release Notes\n\n[\s\S]*$/;
+    
+    let newBody;
+    if (releaseNotesRegex.test(currentBody)) {
+      // 既存のリリースノートセクションを置換
+      newBody = currentBody.replace(releaseNotesRegex, releaseNotesSection);
+    } else {
+      // 新しいリリースノートセクションを追記
+      newBody = currentBody + releaseNotesSection;
+    }
+
+    // PRの説明欄を更新
+    await octokit.rest.pulls.update({
       owner,
       repo,
-      issue_number: pullRequestNumber,
-      body: `## 🚀 Release Notes\n\n${releaseNotes}`,
+      pull_number: pullRequestNumber,
+      body: newBody,
     });
 
     // 出力を設定
     core.setOutput('release-notes', releaseNotes);
 
-    console.log('Release notes generated and posted successfully!');
+    console.log('Release notes generated and updated in PR description successfully!');
   } catch (error) {
     core.setFailed(`Action failed with error: ${error.message}`);
   }
@@ -33437,11 +33465,13 @@ function createPrompt(pullRequest, changedFiles, commitInfo, language) {
   return `
 ${instruction}
 
-以下のプルリクエスト情報に基づいて、包括的なリリースノートをマークダウン形式で生成してください：
+以下のプルリクエスト情報に基づいて、具体的なリリースノートをマークダウン形式で生成してください：
 
-**プルリクエスト情報:**
-- タイトル: ${pullRequest.title}
-- 説明: ${pullRequest.body || '説明なし'}
+**厳守事項：**
+- バージョン番号、バージョン表記、[バージョン番号を挿入]などは一切含めないでください
+- 「このリリースでは」「ユーザー体験の大幅な向上」などの抽象的な表現は使用しないでください
+- プレースホルダーやテンプレート文字列は絶対に使用しないでください
+- 具体的な変更内容のみを記述してください
 
 **貢献者:**
 ${commitInfo.contributors.map(contributor => `- ${contributor}`).join('\n')}
@@ -33452,16 +33482,25 @@ ${commitInfo.importantCommits.map(commit => `- ${commit.sha}: ${commit.message} 
 **すべてのコミット:**
 ${commitInfo.meaningfulCommits.map(commit => `- ${commit.sha}: ${commit.message} (by ${commit.author})`).join('\n')}
 
-以下の項目を含むリリースノートを作成してください：
-1. 変更内容の簡潔な要約
-2. 新機能（該当する場合）
-3. バグ修正（該当する場合）
-4. 破壊的変更（該当する場合）
-5. 技術的改善（該当する場合）
-6. 貢献者への謝辞
+上記のコミット情報を基に、以下の構成でリリースノートを作成してください：
 
-重要なコミットをメインコンテンツに重点を置き、すべてのコミットをコンテキストとして考慮してください。
-適切なヘッダーと箇条書きを使用して、きれいなマークダウンとしてフォーマットしてください。プロフェッショナルでユーザーフレンドリーなものにしてください。
+## 新機能
+（該当するコミットがある場合のみ、具体的な機能を記述）
+
+## バグ修正
+（該当するコミットがある場合のみ、修正内容を記述）
+
+## 改善
+（該当するコミットがある場合のみ、改善内容を記述）
+
+## 破壊的変更
+（該当するコミットがある場合のみ、変更内容を記述）
+
+## 貢献者
+（貢献者一覧）
+
+各セクションは該当するコミットがある場合のみ含めてください。
+抽象的な表現は避け、コミットメッセージから読み取れる具体的な変更内容のみを記述してください。
 `;
 }
 
