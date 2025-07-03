@@ -70,18 +70,34 @@ async function run() {
       console.log('Token usage information not available');
     }
 
-    // リリースノートをプルリクエストにコメントとして投稿
-    await octokit.rest.issues.createComment({
+    // PRの説明欄を更新（既存のリリースノートがあれば置換、なければ追記）
+    const currentBody = pullRequest.body || '';
+    const releaseNotesSection = `\n\n---\n\n## 🚀 Release Notes\n\n${releaseNotes}`;
+    
+    // 既存のリリースノートセクションを検索
+    const releaseNotesRegex = /\n\n---\n\n## 🚀 Release Notes\n\n[\s\S]*$/;
+    
+    let newBody;
+    if (releaseNotesRegex.test(currentBody)) {
+      // 既存のリリースノートセクションを置換
+      newBody = currentBody.replace(releaseNotesRegex, releaseNotesSection);
+    } else {
+      // 新しいリリースノートセクションを追記
+      newBody = currentBody + releaseNotesSection;
+    }
+
+    // PRの説明欄を更新
+    await octokit.rest.pulls.update({
       owner,
       repo,
-      issue_number: pullRequestNumber,
-      body: `## 🚀 Release Notes\n\n${releaseNotes}`,
+      pull_number: pullRequestNumber,
+      body: newBody,
     });
 
     // 出力を設定
     core.setOutput('release-notes', releaseNotes);
 
-    console.log('Release notes generated and posted successfully!');
+    console.log('Release notes generated and updated in PR description successfully!');
   } catch (error) {
     core.setFailed(`Action failed with error: ${error.message}`);
   }
