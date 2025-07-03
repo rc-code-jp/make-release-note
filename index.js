@@ -49,7 +49,7 @@ async function run() {
 
     // Gemini APIを初期化
     const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash-lite-preview-06-17" });
 
     // プロンプトを作成
     const prompt = createPrompt(pullRequest, changedFiles, commitInfo, language);
@@ -150,9 +150,10 @@ ${instruction}
 
 以下のプルリクエスト情報に基づいて、包括的なリリースノートをマークダウン形式で生成してください：
 
-**プルリクエスト情報:**
-- タイトル: ${pullRequest.title}
-- 説明: ${pullRequest.body || '説明なし'}
+**重要な注意事項：**
+- バージョン番号は含めないでください
+- タイトルには「Release Notes」や「リリースノート」のみを使用してください
+- プレースホルダーやテンプレート文字列は使用しないでください
 
 **貢献者:**
 ${commitInfo.contributors.map(contributor => `- ${contributor}`).join('\n')}
