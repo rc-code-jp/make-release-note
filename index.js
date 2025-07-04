@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 async function run() {
   try {
@@ -48,18 +48,21 @@ async function run() {
     const commitInfo = processCommits(commits);
 
     // Gemini APIを初期化
-    const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: "models/gemini-2.5-flash-lite-preview-06-17" });
+    const genAI = new GoogleGenAI({ apiKey: geminiApiKey });
+    const model = genAI.models;
 
     // プロンプトを作成
     const prompt = createPrompt(pullRequest, changedFiles, commitInfo, language);
 
     // Gemini APIでリリースノートを生成
-    const result = await model.generateContent(prompt);
-    const releaseNotes = result.response.text();
+    const result = await model.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: prompt,
+    });
+    const releaseNotes = result.text;
 
     // トークン使用量をログに記録
-    const usageMetadata = result.response.usageMetadata;
+    const usageMetadata = result.usageMetadata;
     if (usageMetadata) {
       console.log('=== Token Usage Information ===');
       console.log(`Prompt tokens: ${usageMetadata.promptTokenCount || 'N/A'}`);
@@ -194,6 +197,9 @@ ${commitInfo.importantCommits.map(commit => `- ${commit.sha}: ${commit.message} 
 ${commitInfo.meaningfulCommits.map(commit => `- ${commit.sha}: ${commit.message} (by ${commit.author})`).join('\n')}
 
 上記のコミット情報を基に、以下の構成でリリースノートを作成してください：
+
+## 要約
+（変更を元にプルリクエストの概要を記述）
 
 ## 新機能
 （該当するコミットがある場合のみ、具体的な機能を記述）
