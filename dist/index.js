@@ -79667,6 +79667,7 @@ async function run() {
   try {
     // 入力パラメータを取得
     const geminiApiKey = core.getInput('gemini-api-key');
+    const geminiModel = core.getInput('gemini-model') || 'models/gemini-2.0-flash-lite';
     const githubToken = core.getInput('github-token');
     const pullRequestNumber = parseInt(core.getInput('pull-request-number'));
     const language = core.getInput('language') || 'en';
@@ -79717,7 +79718,7 @@ async function run() {
 
     // Gemini APIでリリースノートを生成
     const result = await model.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: geminiModel,
       contents: prompt,
     });
     const releaseNotes = result.text;

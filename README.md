@@ -31,6 +31,7 @@ jobs:
         uses: rc-code-jp/make-release-note@v1.0.0
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          gemini-model: 'models/gemini-2.0-flash-lite'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ github.event.number }}
           language: 'ja'
@@ -41,6 +42,7 @@ jobs:
 | パラメータ | 説明 | 必須 | デフォルト |
 |-----------|------|------|-----------|
 | `gemini-api-key` | Gemini APIキー | ✅ | - |
+| `gemini-model` | 使用するGeminiモデル | ❌ | `models/gemini-2.0-flash-lite` |
 | `github-token` | GitHub トークン | ✅ | `${{ github.token }}` |
 | `pull-request-number` | プルリクエスト番号 | ✅ | - |
 | `language` | リリースノートの言語 | ❌ | `en` |
@@ -100,45 +102,3 @@ npm run build
 ```
 
 このコマンドは`@vercel/ncc`を使用してすべての依存関係を`dist/index.js`にバンドルします。
-
-### 重要な注意事項
-
-- GitHub Actionsでは`dist/index.js`が実行されます
-- `dist/`ディレクトリは自動的にビルドされるため、手動でコミットする必要はありません
-- リリース時に自動的にビルドされ、タグに含まれます
-
-### テスト
-
-ローカルでテストする場合は、以下の環境変数を設定してください：
-
-```bash
-export INPUT_GEMINI_API_KEY="your-gemini-api-key"
-export INPUT_GITHUB_TOKEN="your-github-token"
-export INPUT_PULL_REQUEST_NUMBER="1"
-export INPUT_LANGUAGE="ja"
-```
-
-### リリースプロセス
-
-新しいバージョンをリリースするには：
-
-1. バージョンを更新（オプション）:
-   ```bash
-   npm version patch  # または minor, major
-   ```
-
-2. タグを作成してプッシュ:
-   ```bash
-   git tag v1.0.2
-   git push origin v1.0.2
-   ```
-
-3. GitHub Actionsが自動的に：
-   - 依存関係をインストール
-   - プロジェクトをビルド
-   - `dist/`ディレクトリをタグに追加
-   - GitHub Releaseを作成
-
-## 貢献
-
-プルリクエストやイシューの報告を歓迎します。 

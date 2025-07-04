@@ -6,6 +6,10 @@ inputs:
   gemini-api-key:
     description: 'Gemini API key for generating release notes'
     required: true
+  gemini-model:
+    description: 'Gemini model to use for generating release notes'
+    required: false
+    default: 'models/gemini-2.0-flash-lite'
   github-token:
     description: 'GitHub token for accessing repository and creating comments'
     required: true
