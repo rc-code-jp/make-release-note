@@ -1,4 +1,4 @@
-# Make Release Note Action
+# Make Release Note 
 
 このGitHub Actionは、Gemini APIを使用してプルリクエストの変更内容からリリースノートを自動生成します。
 
