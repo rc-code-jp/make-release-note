@@ -28,7 +28,7 @@ jobs:
     
     steps:
       - name: Generate Release Notes
-        uses: rc-code-jp/make-release-note@v1.0.0
+        uses: rc-code-jp/make-release-note@vlatest
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           gemini-model: 'models/gemini-2.0-flash-lite'
@@ -67,20 +67,24 @@ jobs:
 ```markdown
 ## 🚀 Release Notes
 
-### 概要
-このリリースでは、ユーザー認証機能の改善とバグ修正が含まれています。
+## 要約
 
-### 新機能
-- ✨ 2要素認証のサポートを追加
-- 🔐 OAuth2.0による外部認証の実装
+モバイルアプリのアーキテクチャを整備し、APIクライアントをHono RPCに移行しました。
 
-### バグ修正
-- 🐛 ログイン時のセッション管理の問題を修正
-- 🔧 パスワードリセット機能の不具合を解消
+## 新機能
 
-### 技術的改善
-- ⚡ データベースクエリの最適化
-- 📦 依存関係の更新
+*   APIクライアントをHono RPCに移行しました。
+*   認証機能（ログイン、ログアウトなど）を実装しました。
+*   プロフィール関連機能（プロフィール情報の取得、更新など）を実装しました。
+
+## 改善
+
+*   依存関係を整理しました。
+*   不要なファイルを削除しました。
+
+## 貢献者
+
+*   rc-code-jp
 ```
 
 ## ライセンス
